@@ -23,4 +23,3 @@ test('slow time multiplies the current fall interval', () => {
   assert.equal(slowInterval(800,true),1280);
   assert.equal(slowInterval(120,false),120);
 });
-

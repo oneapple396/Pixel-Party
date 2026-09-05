@@ -241,4 +241,3 @@ Confirm there are no network requests for application assets, no dependency entr
 - [ ] **Step 8: Commit the completed draft when Git is available**
 
 Commit all final changes with `feat: complete pixel playground draft` or record that the workspace is not a Git repository.
-

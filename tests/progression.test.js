@@ -3,13 +3,24 @@ import assert from 'node:assert/strict';
 import { normalizeProgression, rewardFor, createProgression } from '../js/progression.js';
 
 test('normalization rejects malformed and negative wallet values', () => {
-  assert.deepEqual(normalizeProgression(null), {version:1,points:0,inventory:{slowTime:0,undo:0,shield:0,doublePoints:0},active:{tetris:null,game2048:null,obby:null}});
+  assert.deepEqual(normalizeProgression(null), {version:2,points:0,highScores:{tetris:0,game2048:0},inventory:{slowTime:0,undo:0,shield:0,doublePoints:0},active:{tetris:null,game2048:null,obby:null},milestones:[]});
   assert.equal(normalizeProgression({points:-9,inventory:{shield:2.8}}).inventory.shield,2);
+});
+test('first run starts both high scores at zero', () => {
+  assert.deepEqual(normalizeProgression(null).highScores, {tetris:0,game2048:0});
+});
+test('high scores only increase and save through the storage adapter', () => {
+  const memory={value:null,load(fallback){return this.value??fallback},save(value){this.value=structuredClone(value);return true}};
+  const p=createProgression({storage:memory});
+  assert.equal(p.recordHighScore('game2048',64),true);
+  assert.equal(p.recordHighScore('game2048',32),false);
+  assert.equal(memory.value.highScores.game2048,64);
 });
 test('reward table maps game accomplishments', () => {
   assert.equal(rewardFor({game:'tetris',rows:4}),50);
   assert.equal(rewardFor({game:'game2048',tile:512}),40);
-  assert.equal(rewardFor({game:'obby',level:1,noDeath:true}),45);
+  assert.equal(rewardFor({game:'obby',level:1,noDeath:true}),12);
+  assert.equal(rewardFor({game:'obby',level:10,noDeath:false}),17);
 });
 test('wallet purchases, reserves, refunds and consumes boosts', () => {
   const memory={value:{version:1,points:100,inventory:{slowTime:0,undo:0,shield:0,doublePoints:0},active:{tetris:null,game2048:null,obby:null}},get(){return this.value},set(k,v){this.value=v}};
@@ -28,6 +39,12 @@ test('double points applies to the next positive reward once', () => {
 test('run state prevents duplicate milestone and level rewards', () => {
   const memory={value:null,get(k,f){return this.value??f},set(k,v){this.value=v}}; const p=createProgression({storage:memory}); const run={paid:new Set()};
   assert.equal(p.earn({game:'game2048',tile:128},run),10); assert.equal(p.earn({game:'game2048',tile:128},run),0);
-  assert.equal(p.earn({game:'obby',level:1,noDeath:false},run),30); assert.equal(p.earn({game:'obby',level:1,noDeath:true},run),0);
+  assert.equal(p.earn({game:'obby',level:1,noDeath:false},run),8); assert.equal(p.earn({game:'obby',level:1,noDeath:true},run),0);
 });
-
+test('milestone rewards remain claimed after reloading progression', () => {
+  const memory={value:null,load(fallback){return this.value??fallback},save(value){this.value=structuredClone(value);return true}};
+  const first=createProgression({storage:memory});
+  assert.equal(first.earn({game:'obby',level:1,noDeath:false}),8);
+  const reloaded=createProgression({storage:memory});
+  assert.equal(reloaded.earn({game:'obby',level:1,noDeath:true}),0);
+});

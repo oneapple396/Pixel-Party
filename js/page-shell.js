@@ -1,0 +1,12 @@
+import {BOOSTS} from './progression.js';
+
+export function mountPageShell({page,progression,preferenceStorage}){
+ const reward=document.querySelector('[data-reward]');let toastTimer;
+ const toast=text=>{if(!reward)return;reward.textContent=text;reward.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>reward.classList.remove('show'),2200)};
+ const boostButton=(game,id,state)=>{const b=BOOSTS[id],owned=state.inventory[id],active=state.active[game];return`<button data-activate="${id}" data-game="${game}" ${!owned||active?'disabled':''}>${b.icon} ${active===id?'Active':`${b.name} · ${owned} owned`}</button>`};
+ function render(){const state=progression.snapshot(),points=document.querySelector('[data-points]');if(points)points.textContent=state.points;const shop=document.querySelector('[data-shop]');if(shop)shop.innerHTML=Object.entries(BOOSTS).map(([id,b])=>`<article class="power-card"><span>${b.icon}</span><div><h3>${b.name}</h3><p>${b.effect}</p><small>Owned: ${state.inventory[id]}</small></div><button data-buy="${id}" ${state.points<b.cost?'disabled':''}>● ${b.cost}</button></article>`).join('');const tray=document.querySelector(`[data-boost-tray="${page}"]`);if(tray){const ids=Object.keys(BOOSTS).filter(id=>BOOSTS[id].game===page||BOOSTS[id].game==='any');tray.innerHTML='<b>BOOSTS</b>'+ids.map(id=>boostButton(page,id,state)).join('')}}
+ const click=event=>{const buy=event.target.closest('[data-buy]')?.dataset.buy;if(buy)toast(progression.purchase(buy)?`${BOOSTS[buy].name} added!`:'Earn more points first!');const button=event.target.closest('[data-activate]');if(button)toast(progression.activate(button.dataset.game,button.dataset.activate)?`${BOOSTS[button.dataset.activate].name} ready!`:'That boost is not ready.');render()};
+ document.addEventListener('click',click);const unsubscribe=progression.subscribe(event=>{if(event.type==='earn')toast(`+${event.amount} points!`);render()});
+ const soundButton=document.getElementById('sound');let sound=preferenceStorage.get('sound',false);const soundUI=()=>{if(soundButton){soundButton.textContent=sound?'🔊':'🔇';soundButton.setAttribute('aria-label',sound?'Turn sound off':'Turn sound on')}};soundButton?.addEventListener('click',()=>{sound=!sound;preferenceStorage.set('sound',sound);soundUI()});soundUI();render();
+ return{render,toast,destroy(){clearTimeout(toastTimer);unsubscribe();document.removeEventListener('click',click)}};
+}

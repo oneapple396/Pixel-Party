@@ -198,4 +198,3 @@ Create `outputs/pixel-playground-progression.zip` containing `index.html`, both 
 - [ ] **Step 9: Commit when Git is available**
 
 Commit with `feat: add points shop and powerups`; otherwise keep the verified workspace in place.
-

@@ -78,4 +78,3 @@
 @media (prefers-reduced-motion: reduce) {
   .board2048 .moving.go, .board2048 .g-tile:not(.moving), .reward-toast { transition: none; animation: none; }
 }
-

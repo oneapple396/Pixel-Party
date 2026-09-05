@@ -146,4 +146,3 @@ Manual browser verification covers:
 ## Acceptance Criteria
 
 The project is complete when all three games can be selected from the homepage and played to their intended terminal state; both keyboard and touch controls work; navigation does not leave active timers behind; layouts remain usable on phone and Chromebook screens; best scores persist locally; and the site builds and runs using only HTML, CSS, and JavaScript.
-

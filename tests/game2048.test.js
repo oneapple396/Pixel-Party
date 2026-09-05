@@ -31,4 +31,3 @@ test('undo restores an exact board and score snapshot', () => {
   assert.deepEqual(restoreUndo(snap),{board:[[2,0],[0,0]],score:18});
   assert.notEqual(restoreUndo(snap).board,snap.board);
 });
-

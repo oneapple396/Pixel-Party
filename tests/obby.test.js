@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { overlaps, resolveVertical, activateTriggers, shouldContinueLoop, anchorHazard, jumpCanReach, validateRoute, getLevel, deathOutcome } from '../js/obby.js';
+import { overlaps, resolveVertical, activateTriggers, shouldContinueLoop, anchorHazard, jumpCanReach, validateRoute, getLevel, levelCount, deathOutcome } from '../js/obby.js';
 
 test('rectangle overlap excludes separated edges', () => {
   assert.equal(overlaps({x:0,y:0,w:10,h:10},{x:9,y:9,w:2,h:2}), true);
@@ -33,8 +33,15 @@ test('route validation rejects a full-height obstacle in a required corridor', (
 test('repaired level two has a valid route with reachable landings', () => {
   assert.deepEqual(validateRoute(getLevel(1)), {valid:true,failures:[]});
 });
+test('all ten levels have possible routes and increasing variety', () => {
+  assert.equal(levelCount(),10);
+  const levels=Array.from({length:levelCount()},(_,index)=>getLevel(index));
+  for(const level of levels)assert.deepEqual(validateRoute(level),{valid:true,failures:[]});
+  assert.ok(new Set(levels.map(level=>level.name)).size===10);
+  assert.ok(levels.some(level=>level.platforms.some(platform=>platform.moving)));
+  assert.ok(levels.some(level=>level.hazards.some(hazard=>hazard.kind==='block')));
+});
 test('shielded hazards preserve death count and show save feedback', () => {
   assert.deepEqual(deathOutcome(true,4),{deaths:4,message:'Shield saved you!'});
   assert.deepEqual(deathOutcome(false,4),{deaths:5,message:'Trolled! Try again 😈'});
 });
-

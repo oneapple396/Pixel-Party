@@ -124,4 +124,3 @@ Manual verification covers buying and activating every boost, refreshing with sa
 ## Acceptance Criteria
 
 The change is complete when Level 2 can be completed reliably with keyboard and touch controls; all three games award points according to the specified tables without duplicate milestone or level rewards; players can purchase, activate, consume, and retain the defined boosts; the wallet and inventory survive refresh locally; storage failures do not block games; and the complete automated suite passes.
-
